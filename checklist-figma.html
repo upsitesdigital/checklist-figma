@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Checklist Figma Atomik</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f6f7f9; --surface:#ffffff; --text:#1a1d23; --muted:#5f6673; --line:#e3e6eb;
+  --accent:#4f46e5; --accent-soft:#eef0ff; --new:#0f8a5f; --new-soft:#e6f6ef; --check:#4f46e5;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#111318; --surface:#1a1d24; --text:#e8eaef; --muted:#9aa1ad; --line:#2a2f39;
+    --accent:#8b85ff; --accent-soft:#25254a; --new:#3ecf95; --new-soft:#15332a; --check:#8b85ff;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#111318; --surface:#1a1d24; --text:#e8eaef; --muted:#9aa1ad; --line:#2a2f39;
+  --accent:#8b85ff; --accent-soft:#25254a; --new:#3ecf95; --new-soft:#15332a; --check:#8b85ff;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.55 Inter,system-ui,sans-serif}
+.wrap{max-width:860px;margin:0 auto;padding:40px 16px 80px}
+h1{font-size:28px;line-height:1.25;margin:0 0 12px;letter-spacing:-.01em}
+.intro{color:var(--muted);margin:0 0 24px}
+.toolbar{position:sticky;top:0;z-index:5;background:var(--bg);padding:12px 0;margin-bottom:8px;border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.progress{flex:1 1 220px;display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted)}
+.bar{flex:1;height:8px;background:var(--line);border-radius:99px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .25s}
+.btns{display:flex;gap:8px;flex-wrap:wrap}
+button{font:inherit;font-size:13px;padding:6px 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--text);cursor:pointer}
+button[aria-pressed="true"]{background:var(--new-soft);border-color:var(--new);color:var(--new)}
+.legend{font-size:13px;color:var(--muted);margin:16px 0 8px;display:flex;align-items:center;gap:8px}
+section{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px 20px 8px;margin-top:20px}
+h2{font-size:17px;margin:0 0 8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+h2 .count{font-size:12px;font-weight:500;color:var(--muted);margin-left:auto}
+ul{list-style:none;margin:0;padding:0}
+li{border-top:1px solid var(--line)}
+li:first-child{border-top:0}
+label{display:flex;gap:12px;padding:12px 0;cursor:pointer;align-items:flex-start}
+input[type=checkbox]{appearance:none;flex:0 0 20px;width:20px;height:20px;margin-top:1px;border:2px solid var(--muted);border-radius:6px;display:grid;place-content:center;cursor:pointer}
+input[type=checkbox]:checked{background:var(--check);border-color:var(--check)}
+input[type=checkbox]:checked::after{content:"";width:10px;height:6px;border:2px solid #fff;border-top:0;border-right:0;transform:rotate(-45deg) translate(1px,-1px)}
+input[type=checkbox]:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.txt b{font-weight:600}
+.txt .why{color:var(--muted)}
+li.done .txt b{text-decoration:line-through;text-decoration-color:var(--muted)}
+.tag{display:inline-block;font-size:11px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;padding:2px 7px;border-radius:99px;background:var(--new-soft);color:var(--new);vertical-align:1px;margin-left:6px}
+li.is-new{background:linear-gradient(90deg,var(--new-soft),transparent 60%);margin:0 -20px;padding:0 20px}
+body.only-new li:not(.is-new){display:none}
+body.only-new section:not(.has-new){display:none}
+.note{margin-top:28px;font-size:13px;color:var(--muted);border-left:3px solid var(--accent);padding:8px 14px;background:var(--accent-soft);border-radius:0 8px 8px 0}
+@media print{
+  .toolbar{position:static}
+  .btns{display:none}
+  section{break-inside:avoid-page}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Checklist – Construção de Layout no Figma para o Atomik</h1>
+  <p class="intro">Este guia reúne as práticas que o time de design deve seguir ao montar telas no Figma, para que a IA (Claude) consiga interpretar a estrutura corretamente e gerar o site com fidelidade — sem retrabalho de nomenclatura, estilos ou espaçamento depois.</p>
+
+  <div class="toolbar">
+    <div class="progress"><span id="pct">0/0</span><div class="bar"><i id="fill"></i></div></div>
+    <div class="btns">
+      <button id="onlyNew" aria-pressed="false">Mostrar só os novos</button>
+      <button id="reset">Limpar marcações</button>
+      <button onclick="window.print()">Imprimir</button>
+    </div>
+  </div>
+  <p class="legend"><span class="tag" style="margin:0">Novo</span> itens adicionados nesta revisão (v3)</p>
+
+  <div id="list"></div>
+
+  <p class="note">As marcações ficam salvas apenas neste navegador. Para começar o checklist de um novo projeto, use "Limpar marcações".</p>
+</div>
+
+<script>
+const S = [
+ {t:"1. Estrutura e nomenclatura", i:[
+  ["Usar Auto Layout em todos os frames e componentes","sem isso, a IA não reconhece hierarquia, espaçamento nem comportamento responsivo do layout."],
+  ["Nomear camadas por função semântica, não por descrição visual (\"Header\", \"Hero Section\", \"CTA Button\", \"Card - Produto\" em vez de \"Frame 47\" ou \"Group 12\")","nomes genéricos não indicam o que o elemento representa, dificultando a geração do código."],
+  ["Renomear seções como \"Section\"/\"Seção\"","permite à IA identificar os blocos estruturais da página."],
+  ["Nomear títulos como H1, H2, H3 — batendo com a hierarquia real do HTML","garante que o código gerado preserve a hierarquia correta de SEO e acessibilidade."],
+  ["Nomear textos de corpo como \"Parágrafo\", \"Label\", \"Caption\", etc.","evita que textos sejam confundidos com títulos ou outros elementos."],
+  ["Seguir o glossário de nomenclatura padrão do time","mantém consistência entre diferentes designers e arquivos."],
+  ["Deixar o layout de todo o site organizado em Frames (não em grupos soltos)","grupos não carregam Auto Layout nem organização clara de hierarquia."],
+  ["Deixar as seções dentro do limite da tela desenvolvida, sem conteúdo estourando a seção","evita que elementos vazem visualmente e gerem erros de medida no código."],
+  ["Evitar rascunhos e testes soltos espalhados pelo arquivo de layout","rascunhos confundem a leitura do arquivo e podem ser interpretados como conteúdo real."],
+  ["Definir o redimensionamento de cada elemento: Fill container, Hug contents ou Fixed — e min/max width quando fizer sentido","vira width: 100%, fit-content ou largura fixa no código; sem isso a IA precisa adivinhar as medidas.",1],
+  ["Evitar aninhamento desnecessário (frames que só envolvem outro frame, sem função)","cada frame extra vira uma div inútil no código e deixa a estrutura mais difícil de manter.",1],
+  ["Quando um elemento precisar ficar sobreposto (selo, badge, ícone flutuante), usar Absolute position dentro do Auto Layout","camadas soltas sobrepostas viram coordenadas fixas e quebram na versão responsiva.",1],
+ ]},
+ {t:"2. Estilos, não valores soltos", i:[
+  ["Salvar cores como Color Style (não como Variable), nomeadas de forma consistente (ex: \"Primary/600\")","Styles são lidos como tokens de design pelo Atomik, diferente de Variables."],
+  ["Salvar tipografia como Text Style, nomeada pela hierarquia (\"Heading/H1\", \"Body/Paragraph\")","mantém a hierarquia tipográfica identificável e reutilizável no código."],
+  ["Nunca aplicar cor ou fonte \"na mão\" em cada camada","valores soltos quebram a consistência que o código replica automaticamente."],
+  ["Reutilizar os mesmos estilos em todo o arquivo, em vez de criar variações pontuais","evita variações visuais não intencionais entre telas semelhantes."],
+  ["Se o time usar Variables de cor (ex: para modo claro/escuro), manter as Color Styles apontando para essas Variables — nunca aplicar a Variable direto na camada","o Atomik continua lendo as Styles como tokens, e as Variables ficam só como a base por trás delas.",1],
+  ["Salvar sombras e desfoques como Effect Style (ex: \"Shadow/Card\", \"Shadow/Modal\")","mesma lógica das cores: vira um token reutilizável em vez de valores de box-shadow diferentes em cada card.",1],
+ ]},
+ {t:"3. Espaçamento e grid", i:[
+  ["Usar um sistema de espaçamento consistente, em múltiplos de 4 ou 8px (padding, gap no Auto Layout)","vira valores previsíveis de margin/padding/gap no código."],
+  ["Criar Variables numéricas para espaçamento e raio de borda (ex: \"Spacing/8\", \"Spacing/16\", \"Radius/MD\") e aplicá-las no padding, no gap e nos cantos","o Figma não tem Style para espaçamento; com Variables, a IA lê tokens nomeados em vez de números soltos.",1],
+  ["Definir breakpoints claros — mobile, tablet, desktop — como frames ou variantes separados","garante que o layout responda corretamente em diferentes tamanhos de tela."],
+  ["Evitar um frame \"genérico\" único sem indicação de comportamento responsivo","sem essa indicação, a IA não sabe como adaptar o layout entre telas."],
+  ["Manter grid de colunas consistente entre as telas","facilita o alinhamento e a leitura do layout entre páginas."],
+  ["Padronizar os espaçamentos entre módulos e fontes — evitar diferenças entre módulos semelhantes","evita inconsistências visuais entre seções parecidas do site."],
+  ["Nomear os frames de cada breakpoint com o mesmo padrão (ex: \"Home / Desktop\", \"Home / Tablet\", \"Home / Mobile\")","permite à IA relacionar as versões da mesma tela e gerar um único componente responsivo.",1],
+ ]},
+ {t:"4. Componentização", i:[
+  ["Transformar elementos repetidos (cards, botões, itens de menu) em Components/Variants","sinaliza claramente que o elemento se repete e deve virar um componente reutilizável no código."],
+  ["Criar variantes para estados: hover, active, disabled","permite que o código gere os estados de interação corretamente."],
+  ["Evitar duplicar cópias soltas de um mesmo elemento — sempre reutilizar o componente","duplicações dificultam a manutenção e geram inconsistências entre instâncias."],
+  ["Criar componentes para todos os elementos que se repetem no projeto: cards, botões, ícones, etc.","reforça a componentização e evita retrabalho."],
+  ["Nunca desanexar (detach) instâncias de componentes","a instância desanexada perde o vínculo e a IA deixa de reconhecê-la como o mesmo componente.",1],
+  ["Nomear variantes e propriedades de forma clara (variant = primary/secondary, size = sm/md/lg, state = default/hover/disabled)","esses nomes viram as props do componente no código.",1],
+  ["Usar propriedades de componente (texto, booleana, instance swap) em vez de criar variantes duplicadas — ex: botão com/sem ícone via booleana","menos variantes e uma API de componente mais limpa no código gerado.",1],
+  ["Incluir também os estados de focus, erro, vazio e carregando (inputs, formulários, listas)","completam hover/active/disabled; sem eles a IA não gera feedback de validação nem telas vazias.",1],
+ ]},
+ {t:"5. Imagens", i:[
+  ["Nomear as imagens com o SEO correto antes de subir ao Figma","melhora a indexação e já entra pronto para o atributo alt."],
+  ["Otimizar as imagens, mantendo no máximo 400kb cada","evita páginas lentas e problemas de performance no site gerado."],
+  ["Evitar embutir texto dentro das imagens","texto real é editável e indexável — diferente de texto dentro de imagem, que não pode ser lido ou editado pelo código."],
+  ["Criar ícones como componentes vetoriais nomeados (ex: \"Icon/Search\", \"Icon/Arrow-Right\"), não como formas soltas ou imagens","exportam como SVG limpo e são reconhecidos como o mesmo ícone em todo o site.",1],
+  ["Aplicar imagens como preenchimento (image fill) de um frame nomeado e configurar a exportação (WebP, PNG ou SVG) quando necessário","a IA identifica o que é imagem de conteúdo e consegue baixar o asset no formato certo.",1],
+  ["Não converter texto em contorno (Outline / Flatten)","igual ao texto em imagem: vira vetor e deixa de ser texto editável e indexável.",1],
+ ]},
+ {t:"6. Conteúdo real", i:[
+  ["Preencher com textos e imagens reais (ou próximos do real), evitando lorem ipsum","conteúdo genérico impede que a IA gere copy e estrutura fiéis ao produto final."],
+  ["Garantir que o conteúdo reflete o que vai para produção, para gerar copy e estrutura fiéis","evita retrabalho ao trocar conteúdo fictício por real depois."],
+ ]},
+ {t:"7. Anotações de interação", i:[
+  ["Deixar um comentário no frame explicando qualquer comportamento especial (carrossel, accordion, formulário com validação, etc.)","o Auto Layout não capta lógica de interação, só estrutura visual."],
+  ["Lembrar que o Auto Layout capta estrutura, não lógica de interação — a anotação é essencial nesses casos","reforça por que essas anotações são indispensáveis."],
+  ["Documentar os comportamentos responsivos que o layout não mostra (menu vira hambúrguer, header sticky, colunas que empilham no mobile)","a diferença entre os frames nem sempre deixa claro o que muda e quando.",1],
+  ["Usar as Annotations do Dev Mode, além dos comentários","ficam vinculadas ao elemento específico e acompanham o handoff, em vez de se perderem na lista de comentários.",1],
+ ]},
+ {t:"8. Projetos em desenvolvimento", i:[
+  ["Ao adicionar novas funcionalidades a um projeto já concluído, criar uma seção de página nova indicando \"projeto em desenvolvimento\"","evita que a IA confunda conteúdo em progresso com o site já publicado."],
+  ["Isso facilita a consulta posterior, principalmente quando o cliente retorna depois da entrega","mantém o histórico organizado sem misturar versões antigas e novas."],
+ ]},
+ {t:"9. Organização do arquivo e entrega para a IA", i:[
+  ["Organizar o arquivo com uma página por área/fluxo do site e um frame por tela","a IA localiza cada tela sem ambiguidade.",1],
+  ["Manter os componentes em uma página separada (ou em uma biblioteca publicada)","separa a fonte dos componentes das telas que os utilizam.",1],
+  ["Apagar camadas ocultas e sobras antes da entrega","camadas escondidas também aparecem na estrutura lida pela IA e podem virar código.",1],
+  ["Ao pedir o código, enviar o link de um frame específico (tela ou seção), não da página inteira","um contexto menor gera um código mais fiel e completo.",1],
+  ["Quando houver biblioteca de componentes em código, conectá-la ao Figma via Code Connect (planos Organization/Enterprise)","a IA reutiliza os componentes reais do projeto em vez de recriá-los.",1],
+ ]},
+];
+
+const KEY="checklist-figma-atomik-v3";
+let state={};
+try{state=JSON.parse(localStorage.getItem(KEY))||{}}catch(e){}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}};
+const esc=s=>s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+const list=document.getElementById("list");
+list.innerHTML=S.map((s,si)=>{
+  const n=s.i.filter(x=>x[2]).length;
+  return `<section class="${n?"has-new":""}"><h2>${esc(s.t)}${s.i.every(x=>x[2])?'<span class="tag">Nova seção</span>':""}<span class="count">${s.i.length} itens${n?` · ${n} novo${n>1?"s":""}`:""}</span></h2><ul>`+
+   s.i.map((x,ii)=>{const id=`s${si}i${ii}`;return `<li class="${x[2]?"is-new":""}${state[id]?" done":""}"><label><input type="checkbox" data-id="${id}"${state[id]?" checked":""}><span class="txt"><b>${esc(x[0])}</b>${x[2]?'<span class="tag">Novo</span>':""} <span class="why">— ${esc(x[1])}</span></span></label></li>`}).join("")+
+  `</ul></section>`;
+}).join("");
+
+const boxes=[...document.querySelectorAll("input[type=checkbox]")];
+function update(){
+  const d=boxes.filter(b=>b.checked).length;
+  document.getElementById("pct").textContent=`${d}/${boxes.length} concluídos`;
+  document.getElementById("fill").style.width=(d/boxes.length*100)+"%";
+}
+boxes.forEach(b=>b.addEventListener("change",()=>{
+  state[b.dataset.id]=b.checked; b.closest("li").classList.toggle("done",b.checked); save(); update();
+}));
+document.getElementById("reset").onclick=()=>{
+  state={}; save(); boxes.forEach(b=>{b.checked=false;b.closest("li").classList.remove("done")}); update();
+};
+const on=document.getElementById("onlyNew");
+on.onclick=()=>{const v=on.getAttribute("aria-pressed")!=="true";on.setAttribute("aria-pressed",v);document.body.classList.toggle("only-new",v)};
+update();
+</script>
+</body>
+</html>
